@@ -1,0 +1,127 @@
+
+Write-Host ‘————————————————————————————————————’
+Write-Host ‘Test autodiagnóstico coronavirus’
+Write-Host ‘————————————————————————————————————’
+$contador =0
+$resultado=''
+$texto=''
+Write-Host ‘————————————————————————————————————’
+$tos=[int](Read-Host ‘¿Tiene tos seca? introduzca 1 pasa sí, 0 para no’)
+if($tos -eq 1){
+$contador++
+}
+$aire=[int](Read-Host ‘¿Tiene sensacion de falta de aire? introduzca 1 pasa sí, 0 para no’)
+if($aire -eq 1){
+$contador++
+}
+$temperatura= [int] (Read-Host -Prompt "Introduzca su temperatura corporal")
+if($aire -eq 1){
+$contador++
+}
+$nombre=Read-Host ‘Introduzca su nombre'
+$apellido=Read-Host ‘Introduzca su apellido’
+$dni=Read-Host ‘Introduzca DNI’
+$edad=Read-Host ‘Introduzca edad’
+$calle=Read-Host ‘Introduzca calle’
+$poblacion=Read-Host ‘Introduzca poblacion’
+$ciudad=Read-Host ‘Introduzca ciudad’
+
+$nombre,$apellido,$dni,$tos,$aire,$temperatura,$edad,$calle,$poblacion,$ciudad > C:\Users\Coke\Desktop\$dni'.txt'
+if(($temperatura -ge 37.7)-or($contador -gt 1)){
+$resultado='Positivo'
+}else{
+$resultado='Negativo'
+}
+
+$urlsiPoblacion=’https://www.google.com/maps/search/hospital/’ +$poblacion
+$urlsiPoblacion=$urlsiPoblacion.replace(” “,”+”)
+$urlsiPoblacion
+
+if(($temperatura -ge 37.7)-or($contador -gt 1)){
+$urlsi=’https://www.google.es/maps/place/’ + $calle +"," +$poblacion + "," + $ciudad
+$urlsi=$urlsi.replace(” “,”+”)
+$urlsi
+$resulti=(Invoke-WebRequest -Uri $urlsi)
+foreach($pit in $resulti.Content)
+{
+Start-Process chrome $urlsi
+}
+Start-Sleep -Seconds 3
+
+if(($edad -gt 0)-or($edad -lt 20)){
+$texto='Eres personal de bajo riesgo, aun asi debes tener cuidado y mantener las precauciones, toma estas recomendaciones'
+Start-Process https://www.cdc.gov/coronavirus/2019-ncov/prepare/prevention-sp.html
+}elseif(($edad -gt 21)-or($edad -lt 40)){
+$texto='Eres personal riesgo medio, aun asi debes tener cuidado y mantener las precauciones, toma estas recomendaciones'
+Start-Process https://www.cdc.gov/coronavirus/2019-ncov/prepare/prevention-sp.html
+}elseif(($edad -gt 40)-or($edad -lt 60)){
+$texto= 'Estas dentro del personal de riesgo, debes extremar tus salidad y aislarte de los demas, toma estas pautas y acude al medico para pedir ayuda'
+Start-Process https://www.cdc.gov/coronavirus/2019-ncov/prepare/prevention-sp.html
+}else{
+$texto= 'Eres el personal con la franja de edad mas peligrosa, acude al emdico y extrema las precauciones'
+Start-Process https://www.cdc.gov/coronavirus/2019-ncov/prepare/prevention-sp.html
+}
+
+}else{
+$texto= ‘Esta usted bien, aun asi debe tomar las medidas de precaución adecuadas. Le ofrecemos informacion para su salud en la siguiente web'
+
+Start-Sleep -Seconds 10
+Start-Process chrome https://www.cdc.gov/coronavirus/2019-ncov/prepare/prevention-sp.html
+
+
+
+}
+
+Start-Sleep -Seconds 2
+$contenido = '<!DOCTYPE html>
+<html>
+<head>
+	<title>Diagnostico Final</title>
+</head>
+<body bgcolor="grey">
+	<div style=" border-radius: 30% 30% 30% 30%; border: 2px groove LAVENDER;">
+		<br>
+<h1 align="center">Autodiagnostico Coronavirus</h1>
+<br>
+<br>
+<div style="width: 40%;
+	height: 100%;
+	background-color: LAVENDER;
+	border: 12px groove MEDIUMPURPLE;
+	padding-top: 1em;
+	padding-bottom: 2em;
+	padding-left: 3em;
+	padding-right: 4em; margin-left: 25%">
+	<br>
+	<br>
+	<p><u><b>Nombre:</u> </b>'+$nombre+ '</p><br>
+	<p><u><b>Apellidos:</u> </b>'+$apellido+ '</p><br>
+	<p><u><b>DNI:</u> </b>'+$dni+ '</p><br>
+	<p><u><b>Edad:</u> </b>'+$edad+ '</p><br>
+	<p><u><b>Calle:</u> </b>'+$calle+ '</p><br>
+	<p><u><b>Poblacion:</u> </b>'+$poblacion+ '</p><br>
+	<p><u><b>Ciudad:</u> </b>'+$ciudad+ '</p><br>
+	<p align="center"><u><b>Resultado de la prueba</b></u></p>
+	<div style="width: 10%;
+	height: 5%;
+	background-color: LAVENDER;
+	border: 12px groove MEDIUMPURPLE;
+	padding-top: 1em;
+	padding-bottom: 2em;
+	padding-left: 3em;
+	padding-right: 4em; margin-left: 33%">
+		<p><b>'+$resultado+'</b></p>	
+	</div>
+	<br>
+    <p><b><u>Valoracion:</u> '+$texto+'</b></p><br>
+	<p><u><b>Recomendaciones: </b></u><a href="https://www.cdc.gov/coronavirus/2019-ncov/prepare/prevention-sp.html">Medidas de prevencion</a></p><br>
+	<p><u><b>Hospitales cercanos: </b></u><a href="'+$urlsiPoblacion+'">'+$urlsiPoblacion+'</a></p><br>
+</div>
+<br><br><br><br><br>
+</div>
+</body>
+</html>'
+
+$base64 = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($contenido))
+
+Start-Process chrome ("data:text/html;base64," + $base64)
